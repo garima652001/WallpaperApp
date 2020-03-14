@@ -4,6 +4,7 @@ import android.app.Activity
 import com.georgcantor.wallpaperapp.model.local.FavDatabase
 import com.georgcantor.wallpaperapp.model.remote.ApiClient
 import com.georgcantor.wallpaperapp.repository.ApiRepository
+import com.georgcantor.wallpaperapp.ui.fragment.pictures.PicturesViewModel
 import com.georgcantor.wallpaperapp.util.PreferenceManager
 import com.georgcantor.wallpaperapp.view.activity.MainActivity
 import com.georgcantor.wallpaperapp.viewmodel.*
@@ -30,6 +31,9 @@ val viewModelModule = module {
     }
     viewModel { (manager: PreferenceManager) ->
         CategoryViewModel(androidApplication(), manager)
+    }
+    viewModel {
+        PicturesViewModel(androidApplication(), get())
     }
 }
 

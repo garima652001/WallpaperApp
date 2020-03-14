@@ -26,13 +26,7 @@
         <activity
             android:name=".view.activity.MainActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.Launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/AppTheme.Launcher"></activity>
 
         <activity
             android:name=".view.activity.DetailsActivity"
@@ -54,6 +48,14 @@
         <activity
             android:name=".view.activity.CarBrandActivity"
             android:configChanges="orientation|screenSize" />
+
+        <activity android:name=".ui.StartActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
     </application>
 

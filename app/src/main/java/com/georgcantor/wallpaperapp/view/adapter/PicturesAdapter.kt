@@ -97,5 +97,4 @@ class PicturesAdapter(private val context: Context) : RecyclerView.Adapter<Pictu
     }
 
     override fun getItemCount(): Int = commonPics?.size ?: 0
-
 }
