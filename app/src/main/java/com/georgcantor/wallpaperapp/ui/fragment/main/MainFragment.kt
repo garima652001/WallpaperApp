@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import com.georgcantor.wallpaperapp.R
@@ -23,6 +24,14 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                turnViewPagerOrExit()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
         toolbar.title = getString(R.string.bmw)
 
         val title = toolbar.getChildAt(0) as TextView
@@ -77,5 +86,13 @@ class MainFragment : Fragment() {
             false
         }
         bottom_nav_view.setOnNavigationItemSelectedListener(itemSelectedListener)
+    }
+
+    private fun turnViewPagerOrExit() {
+        when (view_pager.currentItem) {
+            0 -> requireActivity().finish()
+            1 -> view_pager.currentItem = 0
+            2 -> view_pager.currentItem = 1
+        }
     }
 }

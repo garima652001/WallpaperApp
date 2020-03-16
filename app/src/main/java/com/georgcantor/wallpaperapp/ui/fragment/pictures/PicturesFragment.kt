@@ -61,7 +61,7 @@ class PicturesFragment : Fragment() {
 
         val scrollListener = object : EndlessScrollListener(gridLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView) {
-                viewModel.getPictures(query, page)
+                viewModel.getPictures(page, query)
             }
         }
         scrollListener.resetState()
@@ -71,6 +71,6 @@ class PicturesFragment : Fragment() {
 
         viewModel.pictures.observe(viewLifecycleOwner, Observer(adapter::setPictures))
 
-        viewModel.getPictures(query, 1)
+        viewModel.getPictures(1, query)
     }
 }

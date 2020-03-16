@@ -13,8 +13,10 @@ class Constants {
         const val IS_PORTRAIT = "is_portrait"
         const val REQUEST = "request"
         const val CATEGORIES = "categories"
+        const val BMW = "bmw"
+        const val AUDI = "audi"
+        const val MERCEDES = "mercedes-benz"
 
         var RATING = "default"
     }
-
 }
