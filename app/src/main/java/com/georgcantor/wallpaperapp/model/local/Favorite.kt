@@ -7,13 +7,10 @@ import com.georgcantor.wallpaperapp.model.local.Favorite.Favorite.tableName
 
 @Entity(tableName = tableName)
 data class Favorite(
-
-        @PrimaryKey
-        var url: String,
-
-        @ColumnInfo(name = Favorite.Column.hit)
-        var hit: String?
-
+    @PrimaryKey
+    var url: String,
+    @ColumnInfo(name = Favorite.Column.image)
+    var image: String?
 ) {
 
     object Favorite {
@@ -21,8 +18,7 @@ data class Favorite(
 
         object Column {
             const val url = "url"
-            const val hit = "hit"
+            const val image = "image"
         }
     }
-
 }

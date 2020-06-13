@@ -4,8 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.georgcantor.wallpaperapp.BaseAndroidTest
 import com.georgcantor.wallpaperapp.MyApplication
 import com.georgcantor.wallpaperapp.model.remote.ApiClient
-import com.georgcantor.wallpaperapp.repository.ApiRepository
-import com.georgcantor.wallpaperapp.util.Mark
+import com.georgcantor.wallpaperapp.repository.Repository
 import junit.framework.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -20,11 +19,11 @@ class SearchViewModelTest : BaseAndroidTest() {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var viewModel: SearchViewModel
-    private lateinit var repository: ApiRepository
+    private lateinit var repository: Repository
 
     @Before
     fun setUp() {
-        repository = ApiRepository(getContext(), ApiClient.create(getContext()))
+        repository = Repository(getContext(), ApiClient.create(getContext()))
         viewModel = SearchViewModel(MyApplication(), repository)
     }
 

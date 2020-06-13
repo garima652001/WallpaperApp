@@ -9,18 +9,17 @@ import androidx.room.Query
 interface FavDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(favorite: Favorite): Long
+    suspend fun insert(favorite: Favorite): Long
 
     @Query("DELETE FROM favorites WHERE url = :url")
-    fun deleteByUrl(url: String)
+    suspend fun deleteByUrl(url: String)
 
     @Query("DELETE FROM favorites")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM favorites WHERE url LIKE :url")
-    fun getByUrl(url: String): List<Favorite>
+    suspend fun getByUrl(url: String): List<Favorite>
 
     @Query("SELECT * FROM favorites")
-    fun getAll(): List<Favorite>
-
+    suspend fun getAll(): List<Favorite>
 }

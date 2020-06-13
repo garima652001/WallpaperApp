@@ -15,9 +15,8 @@ internal object DatabaseMigration {
 
             object Column {
                 const val id = "id"
-                const val hit = "hit"
+                const val image = "image"
             }
         }
     }
-
 }

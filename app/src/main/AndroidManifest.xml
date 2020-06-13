@@ -9,8 +9,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <uses-permission-sdk-23 android:name="android.permission.RECORD_AUDIO" />
-
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -21,35 +19,28 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        tools:ignore="GoogleAppIndexingWarning">
+        tools:ignore="AllowBackup">
+
+        <activity
+            android:name=".view.activity.models.ModelsActivity"
+            android:configChanges="orientation|screenSize" />
+
+        <activity
+            android:name=".view.activity.categories.CategoriesActivity"
+            android:configChanges="orientation|screenSize" />
+
+        <activity
+            android:name=".view.activity.search.SearchActivity"
+            android:configChanges="orientation|screenSize" />
+
+        <activity
+            android:name=".view.activity.detail.DetailActivity"
+            android:configChanges="orientation|screenSize" />
 
         <activity
             android:name=".view.activity.MainActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.Launcher"></activity>
-
-        <activity
-            android:name=".view.activity.DetailsActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/AppThemeDetail" />
-
-        <activity
-            android:name=".view.activity.SearchActivity"
-            android:configChanges="orientation|screenSize" />
-
-        <activity
-            android:name=".view.activity.FavoriteActivity"
-            android:configChanges="orientation|screenSize" />
-
-        <activity
-            android:name=".view.activity.FullScreenActivity"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
-
-        <activity
-            android:name=".view.activity.CarBrandActivity"
-            android:configChanges="orientation|screenSize" />
-
-        <activity android:name=".ui.StartActivity">
+            android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

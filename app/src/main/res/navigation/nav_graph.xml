@@ -6,12 +6,20 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.georgcantor.wallpaperapp.ui.fragment.main.MainFragment"
-        android:label="MainFragment" />
+        android:name="com.georgcantor.wallpaperapp.view.fragment.main.MainFragment"
+        android:label="MainFragment">
+        <action
+            android:id="@+id/action_mainFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment"
+            app:enterAnim="@anim/pull_in_right"
+            app:exitAnim="@anim/push_out_left"
+            app:popEnterAnim="@anim/pull_in_left"
+            app:popExitAnim="@anim/push_out_right" />
+    </fragment>
 
     <fragment
-        android:id="@+id/picturesFragment"
-        android:name="com.georgcantor.wallpaperapp.ui.fragment.pictures.PicturesFragment"
-        android:label="PicturesFragment" />
+        android:id="@+id/favoritesFragment"
+        android:name="com.georgcantor.wallpaperapp.view.fragment.favorites.FavoritesFragment"
+        android:label="FavoritesFragment" />
 
 </navigation>

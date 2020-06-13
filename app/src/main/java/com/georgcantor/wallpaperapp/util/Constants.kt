@@ -1,22 +1,25 @@
 package com.georgcantor.wallpaperapp.util
 
-class Constants {
+object Constants {
+    const val ARG_QUERY = "query"
+    const val ARG_DETAIL = "detail"
 
-    companion object {
-        const val APP_URL = "https://play.google.com/store/apps/details?id=com.georgcantor.wallpaperapp"
-        const val IS_RATING_EXIST = "is_rating_exist"
-        const val LAUNCHES = "launches"
-        const val EXTRA_PIC = "picture"
-        const val PREF_BOOLEAN = "is_set_wall"
-        const val MY_PREFS = "my_prefs"
-        const val FULL_EXTRA = "full_extra"
-        const val IS_PORTRAIT = "is_portrait"
-        const val REQUEST = "request"
-        const val CATEGORIES = "categories"
-        const val BMW = "bmw"
-        const val AUDI = "audi"
-        const val MERCEDES = "mercedes-benz"
+    const val ANIMALS = "animals"
+    const val BUILDINGS = "buildings"
+    const val NATURE = "nature"
+    const val TEXTURES = "textures"
+    const val TRAVEL = "travel"
+    const val PLACES = "places"
+    const val MUSIC = "music"
+    const val HEALTH = "health"
+    const val FASHION = "fashion"
+    const val FEELINGS = "feelings"
+    const val FOOD = "food"
+    const val PEOPLE = "people"
+    const val SCIENCE = "science"
+    const val SPORTS = "sports"
+    const val COMPUTER = "computer"
+    const val EDUCATION = "education"
 
-        var RATING = "default"
-    }
+    const val ERROR_504 = "HTTP 504 Unsatisfiable Request (only-if-cached)"
 }

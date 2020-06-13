@@ -6,63 +6,43 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
-import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.georgcantor.wallpaperapp.R
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-
-fun AppCompatActivity.openFragment(fragment: Fragment, tag: String) {
-    val transaction = supportFragmentManager.beginTransaction()
-    val lastIndex = supportFragmentManager.fragments.lastIndex
-    val current = supportFragmentManager.fragments[lastIndex]
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) transaction.setCustomAnimations(
-            R.anim.pull_in_right,
-            R.anim.push_out_left,
-            R.anim.pull_in_left,
-            R.anim.push_out_right
-    )
-
-    when {
-        fragment == current -> return
-        fragment.isAdded -> {
-            transaction.replace(R.id.frame_container, fragment)
-            transaction.addToBackStack(tag)
-            transaction.commit()
-        }
-        else -> {
-            transaction.add(R.id.frame_container, fragment)
-            transaction.addToBackStack(tag)
-            transaction.commit()
-        }
-    }
-}
+import java.util.concurrent.TimeUnit
 
 fun <T> Context.openActivity(it: Class<T>, extras: Bundle.() -> Unit = {}) {
     val context = this as AppCompatActivity
-    val intent = Intent(this, it)
-    intent.putExtras(Bundle().apply(extras))
-    startActivity(intent)
+    Intent(this, it).apply {
+        putExtras(Bundle().apply(extras))
+        startActivity(this)
+    }
     context.overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left)
 }
 
-fun Context.getScreenSize(): Int {
-    return when (this.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK) {
+fun Context.isNetworkAvailable() = (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?)
+    ?.activeNetworkInfo?.isConnectedOrConnecting ?: false
+
+fun Context.shortToast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+fun Context.longToast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
+fun Context.getScreenSize(): Int =
+    when (this.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK) {
         Configuration.SCREENLAYOUT_SIZE_XLARGE -> 4
         Configuration.SCREENLAYOUT_SIZE_UNDEFINED -> 3
         Configuration.SCREENLAYOUT_SIZE_LARGE -> 3
@@ -70,34 +50,80 @@ fun Context.getScreenSize(): Int {
         Configuration.SCREENLAYOUT_SIZE_SMALL -> 2
         else -> 2
     }
+
+fun Context.loadImage(
+    url: String,
+    view: ImageView,
+    animView: LottieAnimationView?
+) {
+    Glide.with(this)
+        .load(url)
+        .placeholder(R.drawable.placeholder)
+        .thumbnail(0.1F)
+        .listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any,
+                target: Target<Drawable>,
+                isFirstResource: Boolean
+            ): Boolean {
+                animView?.hideAnimation()
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable,
+                model: Any,
+                target: Target<Drawable>,
+                dataSource: DataSource,
+                isFirstResource: Boolean
+            ): Boolean {
+                animView?.hideAnimation()
+                return false
+            }
+        })
+        .into(view)
 }
 
-fun View.visible() {
-    visibility = View.VISIBLE
+fun View.visible() { visibility = View.VISIBLE
 }
 
-fun View.gone() {
-    visibility = View.GONE
+fun View.gone() { visibility = View.GONE
 }
+
+fun View.hideKeyboard() =
+    (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+        hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+    }
+
+fun View.showKeyboard() =
+    (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+        requestFocus()
+        showSoftInput(this@showKeyboard, 0)
+    }
 
 fun LottieAnimationView.showAnimation() {
-    this.visibility = View.VISIBLE
-    this.playAnimation()
-    this.loop(true)
+    visibility = View.VISIBLE
+    playAnimation()
+    loop(true)
+}
+
+fun LottieAnimationView.hideAnimation() {
+    cancelAnimation()
+    gone()
 }
 
 fun LottieAnimationView.showSingleAnimation(speed: Float) {
-    val animation = this
-    this.visibility = View.VISIBLE
-    this.playAnimation()
-    this.repeatCount = 0
+    visibility = View.VISIBLE
+    playAnimation()
+    repeatCount = 0
     this.speed = speed
-    this.addAnimatorListener(object : Animator.AnimatorListener {
+    addAnimatorListener(object : Animator.AnimatorListener {
         override fun onAnimationRepeat(p0: Animator?) {
         }
 
         override fun onAnimationEnd(p0: Animator?) {
-            animation.gone()
+            gone()
         }
 
         override fun onAnimationCancel(p0: Animator?) {
@@ -108,94 +134,13 @@ fun LottieAnimationView.showSingleAnimation(speed: Float) {
     })
 }
 
-fun LottieAnimationView.hideAnimation() {
-    this.loop(false)
-    this.gone()
-}
-
-fun String.getImageNameFromUrl(): String {
-    val index = this.lastIndexOf("/")
-
-    return this.substring(index)
-}
-
-fun Context.shortToast(message: CharSequence) =
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-fun Context.longToast(message: CharSequence) =
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-
-fun Context.isNetworkAvailable(): Boolean {
-    val manager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-
-    manager?.let {
-        val networkInfo = it.activeNetworkInfo
-        networkInfo?.let { info ->
-            if (info.isConnected) return true
-        }
-    }
-
-    return false
-}
-
-
-fun Context.showDialog(
-        message: CharSequence,
-        function: () -> (Unit)
+inline fun <T> LiveData<T>.observe(
+    owner: LifecycleOwner,
+    crossinline observer: (T) -> Unit
 ) {
-    AlertDialog.Builder(this)
-            .setMessage(message)
-            .setNegativeButton(R.string.no) { _, _ -> }
-            .setPositiveButton(R.string.yes) { _, _ -> function() }
-            .create()
-            .show()
+    this.observe(owner, Observer { it?.apply(observer) })
 }
 
-fun Context.loadImage(
-        url: String,
-        drawable: Drawable,
-        view: ImageView,
-        animView: LottieAnimationView?
-) {
-    Glide.with(this)
-            .load(url)
-            .placeholder(drawable)
-            .thumbnail(0.1F)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any,
-                        target: Target<Drawable>,
-                        isFirstResource: Boolean
-                ): Boolean {
-                    animView?.hideAnimation()
-                    return false
-                }
-
-                override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable>,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean
-                ): Boolean {
-                    animView?.hideAnimation()
-                    return false
-                }
-            })
-            .into(view)
-}
-
-fun Context.loadCircleImage(url: String, view: ImageView) {
-    Glide.with(this)
-            .load(url)
-            .placeholder(R.drawable.memb)
-            .apply(RequestOptions.circleCropTransform())
-            .into(view)
-}
-
-fun <T> Observable<T>.applySchedulers(): Observable<T> {
-    return this
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+fun runDelayed(delay: Long, action: () -> Unit) {
+    Handler().postDelayed(action, TimeUnit.MILLISECONDS.toMillis(delay))
 }

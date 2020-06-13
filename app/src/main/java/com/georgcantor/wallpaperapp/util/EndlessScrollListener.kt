@@ -3,15 +3,14 @@ package com.georgcantor.wallpaperapp.util
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
-abstract class EndlessScrollListener(layoutManager: StaggeredGridLayoutManager)
-    : RecyclerView.OnScrollListener() {
+abstract class EndlessScrollListener(layoutManager: StaggeredGridLayoutManager) : RecyclerView.OnScrollListener() {
 
+    private var manager: RecyclerView.LayoutManager = layoutManager
     private var visibleThreshold = 10
     private var currentPage = 1
     private var previousTotalItemCount = 0
     private var loading = true
     private val startingPageIndex = 1
-    private var manager: RecyclerView.LayoutManager = layoutManager
 
     init {
         visibleThreshold *= layoutManager.spanCount
@@ -19,16 +18,13 @@ abstract class EndlessScrollListener(layoutManager: StaggeredGridLayoutManager)
 
     override fun onScrolled(view: RecyclerView, dx: Int, dy: Int) {
         val totalItemCount = manager.itemCount
-        val lastVisibleItemPositions = (manager as StaggeredGridLayoutManager)
-                .findLastVisibleItemPositions(null)
+        val lastVisibleItemPositions = (manager as StaggeredGridLayoutManager).findLastVisibleItemPositions(null)
         val lastVisibleItemPosition = getLastVisibleItem(lastVisibleItemPositions)
 
         if (totalItemCount < previousTotalItemCount) {
             this.currentPage = this.startingPageIndex
             this.previousTotalItemCount = totalItemCount
-            if (totalItemCount == 0) {
-                this.loading = true
-            }
+            if (totalItemCount == 0) this.loading = true
         }
 
         if (loading && totalItemCount > previousTotalItemCount) {
@@ -63,5 +59,4 @@ abstract class EndlessScrollListener(layoutManager: StaggeredGridLayoutManager)
 
         return maxSize
     }
-
 }
