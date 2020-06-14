@@ -1,5 +1,6 @@
 package com.georgcantor.wallpaperapp.repository
 
+import com.georgcantor.wallpaperapp.BuildConfig.UNSPLASH_URL
 import com.georgcantor.wallpaperapp.model.data.CommonPic
 import com.georgcantor.wallpaperapp.model.data.pixabay.Picture
 import com.georgcantor.wallpaperapp.model.local.FavDao
@@ -15,23 +16,41 @@ class Repository(
 
     suspend fun getPixabayPictures(query: String, index: Int): MutableList<CommonPic> {
         val commonPics = mutableListOf<CommonPic>()
-        val response = apiService.getPixabayPictures(query, index)
+        apiService.getPixabayPictures(query, index).apply {
+            pictures.map {
+                if (it.id != 158703 && it.id != 158704) {
+                    commonPics.add(
+                        CommonPic(
+                            it.webformatUrl ?: "",
+                            it.imageWidth,
+                            it.imageHeight,
+                            it.tags?.split(",")?.get(0) ?: "",
+                            it.imageUrl,
+                            it.fullHdUrl,
+                            it.id
+                        )
+                    )
+                }
+            }
+        }
+        commonPics.shuffle()
 
-        response.pictures.map {
-            if (it.id != 158703 && it.id != 158704) {
+        return commonPics
+    }
+
+    suspend fun getUnsplashPictures(query: String, index: Int): MutableList<CommonPic> {
+        val commonPics = mutableListOf<CommonPic>()
+        apiService.getUnsplashPictures(UNSPLASH_URL, query, index).apply {
+            results?.map {
                 commonPics.add(
                     CommonPic(
-                        it.webformatUrl ?: "",
-                        it.imageWidth,
-                        it.imageHeight,
-                        it.favorites,
-                        it.tags?.split(",")?.get(0) ?: "",
-                        it.downloads,
-                        it.imageUrl,
-                        it.fullHdUrl,
-                        it.user,
-                        it.id,
-                        it.userImageUrl
+                        it.urls?.small ?: "",
+                        it.width ?: 0,
+                        it.height ?: 0,
+                        "",
+                        it.urls?.full,
+                        it.urls?.regular,
+                        it.hashCode()
                     )
                 )
             }

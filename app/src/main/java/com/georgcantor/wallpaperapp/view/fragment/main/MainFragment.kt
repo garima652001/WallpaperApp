@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.fragment_main.*
 class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
 
     private var recentlyBackPressed = false
+    private var audiPressed = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,8 +64,14 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
 
             override fun onPageSelected(position: Int) {
                 when (position) {
-                    0 -> bottom_nav_view.selectedItemId = R.id.nav_bmw
-                    1 -> bottom_nav_view.selectedItemId = R.id.nav_audi
+                    0 -> {
+                        bottom_nav_view.selectedItemId = R.id.nav_bmw
+                        audiPressed = false
+                    }
+                    1 -> {
+                        bottom_nav_view.selectedItemId = R.id.nav_audi
+                        audiPressed = true
+                    }
                     2 -> bottom_nav_view.selectedItemId = R.id.nav_mercedes
                 }
             }
@@ -73,10 +80,12 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
         val itemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_bmw -> {
+                    audiPressed = false
                     view_pager.currentItem = 0
                     return@OnNavigationItemSelectedListener true
                 }
                 R.id.nav_audi -> {
+                    audiPressed = true
                     view_pager.currentItem = 1
                     return@OnNavigationItemSelectedListener true
                 }
@@ -131,7 +140,7 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
                 runDelayed(2000) { recentlyBackPressed = false }
             }
             1 -> view_pager.currentItem = 0
-            2 -> view_pager.currentItem = 1
+            2 -> view_pager.currentItem = if (audiPressed) 1 else 0
         }
     }
 }

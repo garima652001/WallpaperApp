@@ -66,9 +66,9 @@ class ModelsActivity : AppCompatActivity() {
                 if (visible) progress_animation.showAnimation() else progress_animation.hideAnimation()
             }
 
-            error.observe(this@ModelsActivity) { shortToast(it) }
+            error.observe(this@ModelsActivity, this@ModelsActivity::shortToast)
 
-            pictures.observe(this@ModelsActivity) { adapter.setPictures(it) }
+            pictures.observe(this@ModelsActivity, adapter::setPictures)
 
             getPictures(query, 1)
         }

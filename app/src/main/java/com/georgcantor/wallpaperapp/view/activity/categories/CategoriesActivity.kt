@@ -46,7 +46,7 @@ class CategoriesActivity : AppCompatActivity() {
                 if (visible) progress_animation.showAnimation() else progress_animation.hideAnimation()
             }
 
-            error.observe(this@CategoriesActivity) { shortToast(it) }
+            error.observe(this@CategoriesActivity, this@CategoriesActivity::shortToast)
 
             categories.observe(this@CategoriesActivity) {
                 categories_recycler.adapter = CategoriesAdapter(it) {

@@ -35,8 +35,8 @@ class PicturesViewModel(
 
     fun getPictures(query: String, index: Int) {
         viewModelScope.launch(exceptionHandler) {
-            val response = repository.getPixabayPictures(query, index)
-            pictures.postValue(response)
+            val mixResponse = repository.getPixabayPictures(query, index) + repository.getUnsplashPictures(query, index)
+            pictures.postValue(mixResponse.shuffled().toMutableList())
             isProgressVisible.postValue(false)
         }
         isNetworkAvailable.value = context.isNetworkAvailable()

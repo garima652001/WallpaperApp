@@ -78,14 +78,10 @@ class FavoritesFragment : Fragment() {
                                     url = pic.url,
                                     width = pic.width,
                                     height = pic.height,
-                                    favorites = pic.favorites,
                                     tag = pic.tag,
-                                    downloads = pic.downloads,
                                     imageUrl = pic.imageUrl,
                                     fullHdUrl = pic.fullHdUrl,
-                                    user = pic.user,
-                                    id = pic.id,
-                                    userImageUrl = pic.userImageUrl
+                                    id = pic.id
                                 )
                             )
                         }
