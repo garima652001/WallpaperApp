@@ -30,6 +30,7 @@ class ModelsActivity : AppCompatActivity() {
         val query = intent?.extras?.get(ARG_QUERY) as String
 
         with(toolbar) {
+            setTitleTextAppearance(this@ModelsActivity, R.style.RalewayTextAppearance)
             title = query
             navigationIcon = getDrawable(this@ModelsActivity, R.drawable.ic_arrow_back)
             setNavigationOnClickListener {

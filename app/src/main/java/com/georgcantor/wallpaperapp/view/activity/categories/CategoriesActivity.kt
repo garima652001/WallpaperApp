@@ -23,6 +23,7 @@ class CategoriesActivity : AppCompatActivity() {
         viewModel = getViewModel { parametersOf() }
 
         with(toolbar) {
+            setTitleTextAppearance(this@CategoriesActivity, R.style.RalewayTextAppearance)
             title = getString(R.string.categories)
             navigationIcon = getDrawable(this@CategoriesActivity, R.drawable.ic_arrow_back)
             setNavigationOnClickListener {

@@ -56,6 +56,7 @@ class PicturesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val query = arguments?.get(ARG_QUERY) as String
 
         with(toolbar) {
+            setTitleTextAppearance(requireContext(), R.style.RalewayTextAppearance)
             title = query
             navigationIcon = getDrawable(requireContext(), R.drawable.ic_drawer_opener)
             setNavigationOnClickListener {
