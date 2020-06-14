@@ -13,6 +13,8 @@ import androidx.viewpager.widget.ViewPager
 import com.georgcantor.wallpaperapp.R
 import com.georgcantor.wallpaperapp.util.Constants.ARG_QUERY
 import com.georgcantor.wallpaperapp.util.openActivity
+import com.georgcantor.wallpaperapp.util.runDelayed
+import com.georgcantor.wallpaperapp.util.shortToast
 import com.georgcantor.wallpaperapp.view.activity.models.ModelsActivity
 import com.georgcantor.wallpaperapp.view.fragment.pictures.PicturesFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -20,6 +22,8 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
+
+    private var recentlyBackPressed = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,8 +118,18 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
                 return
             }
         }
+
         when (view_pager.currentItem) {
-            0 -> requireActivity().finish()
+            0 -> {
+                when (recentlyBackPressed) {
+                    true -> requireActivity().finish()
+                    false -> {
+                        recentlyBackPressed = true
+                        context?.shortToast(getString(R.string.press_back))
+                    }
+                }
+                runDelayed(2000) { recentlyBackPressed = false }
+            }
             1 -> view_pager.currentItem = 0
             2 -> view_pager.currentItem = 1
         }
