@@ -4,7 +4,12 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.content.res.Configuration
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore.Images.Media.getBitmap
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -77,10 +82,8 @@ class DetailActivity : AppCompatActivity() {
 
                 bottom_app_bar.setOnMenuItemClickListener {
                     when (it.itemId) {
-                        R.id.action_share -> {
-                        }
-                        R.id.action_download -> {
-                        }
+                        R.id.action_share -> { }
+                        R.id.action_download -> startDownloading()
                         R.id.action_add_to_fav -> {
                             when (favorite) {
                                 true -> {
@@ -131,6 +134,7 @@ class DetailActivity : AppCompatActivity() {
 
             fab.setOnClickListener {
                 isWallProgressVisible.value = true
+                isDownload.value = false
 
                 if (this@DetailActivity.isNetworkAvailable()) {
                     if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
@@ -151,14 +155,35 @@ class DetailActivity : AppCompatActivity() {
         bottom_app_bar.setNavigationOnClickListener { onBackPressed() }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        when (newConfig.orientation) {
+            ORIENTATION_LANDSCAPE -> {
+                similar_text.gone()
+                similar_recycler.gone()
+            }
+            ORIENTATION_PORTRAIT -> {
+                similar_text.visible()
+                similar_recycler.visible()
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            CoroutineScope(Dispatchers.IO).launch { viewModel.setImageAsWallpaper(picture) }
+        if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+            viewModel.isDownload.observe(this) { isDownload ->
+                when (isDownload) {
+                    true -> startDownloading()
+                    false -> CoroutineScope(Dispatchers.IO).launch {
+                        viewModel.setImageAsWallpaper(picture)
+                    }
+                }
+            }
         } else {
             longToast(getString(R.string.you_need_perm_toast))
         }
@@ -167,5 +192,30 @@ class DetailActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right)
+    }
+
+    private fun startDownloading() {
+        if (!this.isNetworkAvailable()) {
+            shortToast(getString(R.string.no_internet))
+            return
+        }
+        progress_animation.showAnimation()
+
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            picture?.let { saveImage(it.imageUrl) }
+        } else {
+            viewModel.isDownload.value = true
+            ActivityCompat.requestPermissions(
+                this@DetailActivity,
+                arrayOf(WRITE_EXTERNAL_STORAGE),
+                102
+            )
+        }
+
+        shortToast(getString(R.string.download_start))
+        Handler().postDelayed({
+            shortToast(getString(R.string.down_complete))
+            progress_animation.hideAnimation()
+        }, 5000)
     }
 }

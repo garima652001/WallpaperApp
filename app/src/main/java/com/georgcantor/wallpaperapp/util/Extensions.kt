@@ -1,17 +1,32 @@
 package com.georgcantor.wallpaperapp.util
 
 import android.animation.Animator
+import android.content.ContentValues
 import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.media.MediaScannerConnection.scanFile
 import android.net.ConnectivityManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment.DIRECTORY_PICTURES
+import android.os.Environment.getExternalStoragePublicDirectory
 import android.os.Handler
+import android.provider.MediaStore
+import android.provider.MediaStore.MediaColumns.*
+import android.util.Log
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -21,8 +36,18 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.Transition
 import com.georgcantor.wallpaperapp.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.lang.System.currentTimeMillis
 import java.util.concurrent.TimeUnit
 
 fun <T> Context.openActivity(it: Class<T>, extras: Bundle.() -> Unit = {}) {
@@ -85,25 +110,99 @@ fun Context.loadImage(
         .into(view)
 }
 
-fun View.visible() { visibility = View.VISIBLE
+fun Context.saveImage(url: String?) {
+    Glide.with(this)
+        .asBitmap()
+        .load(url)
+        .into(object : CustomTarget<Bitmap>() {
+            override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    withContext(Dispatchers.IO) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            bitmap.saveImageQ(this@saveImage)
+                        } else {
+                            bitmap.saveImage(this@saveImage)
+                        }
+                    }
+                }
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
 }
 
-fun View.gone() { visibility = View.GONE
+private fun Bitmap.saveImage(context: Context) {
+    val root = getExternalStoragePublicDirectory(DIRECTORY_PICTURES).toString()
+    val myDir = File("$root/Wallpapers")
+    myDir.mkdirs()
+    val randomInt = (0..10000).random()
+    val fileName = "Image-$randomInt.jpg"
+    val file = File(myDir, fileName)
+    if (file.exists()) file.delete()
+    try {
+        FileOutputStream(file).apply {
+            compress(Bitmap.CompressFormat.JPEG, 90, this)
+            flush()
+            close()
+        }
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
+    scanFile(context, arrayOf(file.toString()), null) { path, uri ->
+        Log.i("ExternalStorage", "Scanned $path:")
+        Log.i("ExternalStorage", "-> uri=$uri")
+    }
 }
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun Bitmap.saveImageQ(context: Context) {
+    val values = contentValues()
+    values.put(RELATIVE_PATH, "Pictures/" + "Wallpapers")
+    values.put(IS_PENDING, true)
+
+    val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    if (uri != null) {
+        saveImageToStream(this, context.contentResolver.openOutputStream(uri))
+        values.put(IS_PENDING, false)
+        context.contentResolver.update(uri, values, null, null)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+private fun contentValues() = ContentValues().apply {
+    put(MIME_TYPE, "image/png")
+    put(DATE_ADDED, currentTimeMillis() / 1000)
+    put(DATE_TAKEN, currentTimeMillis())
+}
+
+private fun saveImageToStream(bitmap: Bitmap, outputStream: OutputStream?) {
+    if (outputStream != null) {
+        try {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
+fun View.visible() { visibility = VISIBLE }
+
+fun View.gone() { visibility = GONE }
 
 fun View.hideKeyboard() =
-    (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
-        hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+    (context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+        hideSoftInputFromWindow(windowToken, HIDE_NOT_ALWAYS)
     }
 
 fun View.showKeyboard() =
-    (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+    (context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).apply {
         requestFocus()
         showSoftInput(this@showKeyboard, 0)
     }
 
 fun LottieAnimationView.showAnimation() {
-    visibility = View.VISIBLE
+    visible()
     playAnimation()
     loop(true)
 }
@@ -114,7 +213,7 @@ fun LottieAnimationView.hideAnimation() {
 }
 
 fun LottieAnimationView.showSingleAnimation(speed: Float) {
-    visibility = View.VISIBLE
+    visible()
     playAnimation()
     repeatCount = 0
     this.speed = speed

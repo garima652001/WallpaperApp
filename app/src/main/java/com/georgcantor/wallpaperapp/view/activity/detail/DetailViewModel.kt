@@ -31,10 +31,11 @@ class DetailViewModel(
 
     val isProgressVisible = MutableLiveData<Boolean>().apply { this.value = true }
     val isWallProgressVisible = MutableLiveData<Boolean>().apply { this.value = true }
+    val isWallpaperSet = MutableLiveData<Boolean>()
+    val isFavorite = MutableLiveData<Boolean>().apply { postValue(false) }
+    val isDownload = MutableLiveData<Boolean>()
     val error = MutableLiveData<String>()
     val similarImages = MutableLiveData<MutableList<CommonPic>>()
-    val isFavorite = MutableLiveData<Boolean>().apply { postValue(false) }
-    val isWallpaperSet = MutableLiveData<Boolean>()
     val uri = MutableLiveData<Uri>()
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
