@@ -28,13 +28,13 @@
 -dontwarn javax.annotation.**
 -dontwarn kotlin.Unit
 -dontwarn retrofit2.KotlinExtensions
--dontwarn retrofit2.KotlinExtensions$*
+-dontwarn retrofit2.KotlinExtensions.**
 -if interface * { @retrofit2.http.* <methods>; }
 -keep,allowobfuscation interface <1>
 
 # ^^ Retrofit ^^ #
 
--keepclassmembers class fqcn.of.javascript.interface.for.webview {
+-keepclassmembers class fqcn.of.javascript.interface.for.webview* {
    public *;
 }
 
@@ -43,7 +43,7 @@
 -keep public class * extends android.app.Service
 -keep public class * extends android.content.BroadcastReceiver
 -keep public class * extends android.content.ContentProvider
--keep public class com.google.** {*;}
+-keep public class com.google.* {*;}
 -dontwarn java.lang.invoke.**
 -keep class kotlin.Metadata { *; }
 
@@ -60,7 +60,7 @@
 
 #To keep parcelable classes (to serialize - deserialize objects to sent through Intents)
 -keep class * implements android.os.Parcelable {
-  public static final android.os.Parcelable$Creator *;
+  public static final android.os.Parcelable$Creator* *;
 }
 
 -keepclassmembers class * implements android.os.Parcelable {
@@ -87,6 +87,6 @@
     public static *** e(...);
 }
 
--keepnames class com.georgcantor.wallpaperapp.model.** { *; }
+-keepnames class com.georgcantor.wallpaperapp.model.* { *; }
 
--keep class com.georgcantor.wallpaperapp.model.** { *; }
+-keep class com.georgcantor.wallpaperapp.model.* { *; }

@@ -31,7 +31,6 @@ class DetailViewModel(
 
     val isProgressVisible = MutableLiveData<Boolean>().apply { this.value = true }
     val isWallProgressVisible = MutableLiveData<Boolean>().apply { this.value = true }
-    val isFabOpened = MutableLiveData<Boolean>().apply { postValue(false) }
     val error = MutableLiveData<String>()
     val similarImages = MutableLiveData<MutableList<CommonPic>>()
     val isFavorite = MutableLiveData<Boolean>().apply { postValue(false) }
@@ -44,10 +43,6 @@ class DetailViewModel(
             else -> error.postValue(throwable.message)
         }
         isProgressVisible.postValue(false)
-    }
-
-    fun setFabState(isOpened: Boolean) {
-        isFabOpened.value = isOpened
     }
 
     fun getSimilarImages(query: String) {
@@ -114,7 +109,6 @@ class DetailViewModel(
 
     fun setAsWallpaper(bitmap: Bitmap?) {
         CoroutineScope(Dispatchers.IO).launch {
-            isWallProgressVisible.postValue(true)
             WallpaperManager.getInstance(context).setBitmap(bitmap)
             isWallpaperSet.postValue(true)
             isWallProgressVisible.postValue(false)
