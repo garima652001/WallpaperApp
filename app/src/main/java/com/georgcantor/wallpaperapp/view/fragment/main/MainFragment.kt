@@ -1,15 +1,24 @@
 package com.georgcantor.wallpaperapp.view.fragment.main
 
+import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.RatingBar
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat.START
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.viewpager.widget.ViewPager
+import com.georgcantor.wallpaperapp.BuildConfig.APP_URL
 import com.georgcantor.wallpaperapp.R
 import com.georgcantor.wallpaperapp.util.Constants.ARG_QUERY
 import com.georgcantor.wallpaperapp.util.openActivity
@@ -111,8 +120,7 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
                 R.id.nav_porsche -> openActivity(ModelsActivity::class.java) { putString(ARG_QUERY, getString(R.string.porsche)) }
                 R.id.nav_rolls -> openActivity(ModelsActivity::class.java) { putString(ARG_QUERY, getString(R.string.rolls)) }
                 R.id.nav_favorites -> findNavController(this@MainFragment).navigate(R.id.action_mainFragment_to_favoritesFragment)
-                R.id.nav_rate_us -> {
-                }
+                R.id.nav_rate_us -> showRatingDialog()
             }
         }
         drawer_layout.closeDrawer(START)
@@ -142,5 +150,50 @@ class MainFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener
             1 -> view_pager.currentItem = 0
             2 -> view_pager.currentItem = if (audiPressed) 1 else 0
         }
+    }
+
+    private fun showRatingDialog() {
+        val ratingDialog = AlertDialog.Builder(requireContext())
+        val linearLayout = LinearLayout(context)
+        val ratingBar = RatingBar(context)
+        var userMark = 0
+
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        params.setMargins(50, 20, 0, 0)
+        ratingBar.layoutParams = params
+        ratingBar.numStars = 5
+        ratingBar.stepSize = 1F
+
+        linearLayout.addView(ratingBar)
+
+        ratingDialog.setTitle(context?.getString(R.string.rate_us))
+        ratingDialog.setView(linearLayout)
+
+        ratingBar.onRatingBarChangeListener =
+            RatingBar.OnRatingBarChangeListener { _, ratingNumber, _ ->
+                userMark = ratingNumber.toInt()
+            }
+
+        ratingDialog
+            .setPositiveButton(context?.getString(R.string.add_review)) { _, _ ->
+                when (userMark) {
+                    in 4..5 -> {
+                        Intent(ACTION_VIEW, Uri.parse(APP_URL)).apply {
+                            addFlags(FLAG_ACTIVITY_NEW_TASK)
+                            ContextCompat.startActivity(requireContext(), this, null)
+                        }
+                    }
+                    else -> context?.shortToast(getString(R.string.thanks_for_feedback))
+                }
+            }
+            .setNegativeButton(context?.getString(R.string.cancel)) { dialog, _ ->
+                dialog.cancel()
+            }
+
+        ratingDialog.create()
+        ratingDialog.show()
     }
 }
