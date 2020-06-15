@@ -2,9 +2,12 @@ package com.georgcantor.wallpaperapp.view.fragment.favorites
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +24,7 @@ import kotlinx.android.synthetic.main.fragment_favorites.*
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.core.parameter.parametersOf
 
-class FavoritesFragment : Fragment() {
+class FavoritesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private lateinit var viewModel: FavoritesViewModel
     private lateinit var linearLayoutManager: RecyclerView.LayoutManager
@@ -45,12 +48,15 @@ class FavoritesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         with(toolbar) {
+            setTitleTextAppearance(requireContext(), R.style.RalewayTextAppearance)
             title = getString(R.string.favorites_toolbar)
             navigationIcon = getDrawable(requireContext(), R.drawable.ic_arrow_back)
             setNavigationOnClickListener {
                 activity?.onBackPressed()
                 activity?.overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right)
             }
+            inflateMenu(R.menu.menu_favorite)
+            setOnMenuItemClickListener(this@FavoritesFragment)
         }
 
         with(viewModel) {
@@ -59,6 +65,10 @@ class FavoritesFragment : Fragment() {
             }
 
             error.observe(viewLifecycleOwner) { requireActivity()::shortToast }
+
+            deleteIconVisible.observe(viewLifecycleOwner) { visible ->
+                toolbar.menu[0].isVisible = visible
+            }
 
             favorites.observe(viewLifecycleOwner) { favorites ->
                 if (favorites.isNullOrEmpty()) empty_anim_view.showAnimation() else empty_anim_view.hideAnimation()
@@ -86,7 +96,10 @@ class FavoritesFragment : Fragment() {
                             )
                         }
                     }
-                ) { }
+                ) {
+                    val pic = Gson().fromJson(it.image, CommonPic::class.java)
+                    context?.showDialog(getString(R.string.del_from_fav_dialog)) { removeFromFavorites(pic.url) }
+                }
             }
         }
     }
@@ -99,5 +112,15 @@ class FavoritesFragment : Fragment() {
     private fun setupRecyclerView(manager: RecyclerView.LayoutManager) {
         favorites_recycler.setHasFixedSize(true)
         favorites_recycler.layoutManager = manager
+    }
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.action_remove_all -> {
+                context?.showDialog(getString(R.string.remove_fav_dialog_message), viewModel::removeAllFavorites)
+                return true
+            }
+        }
+        return false
     }
 }

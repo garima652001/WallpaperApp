@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 class FavoritesViewModel(private val repository: Repository) : ViewModel() {
 
     val isProgressVisible = MutableLiveData<Boolean>().apply { this.value = true }
+    val deleteIconVisible = MutableLiveData<Boolean>()
     val error = MutableLiveData<String>()
     val favorites = MutableLiveData<List<Favorite>>()
 
@@ -23,7 +24,22 @@ class FavoritesViewModel(private val repository: Repository) : ViewModel() {
         viewModelScope.launch(exceptionHandler) {
             val favList = repository.getAllAsync().await()
             favorites.postValue(favList)
+            deleteIconVisible.postValue(favList.isNotEmpty())
             isProgressVisible.postValue(false)
+        }
+    }
+
+    fun removeAllFavorites() {
+        viewModelScope.launch(exceptionHandler) {
+            repository.deleteAllAsync().await()
+            getFavorites()
+        }
+    }
+
+    fun removeFromFavorites(url: String) {
+        viewModelScope.launch(exceptionHandler) {
+            repository.deleteByUrlAsync(url).await()
+            getFavorites()
         }
     }
 }

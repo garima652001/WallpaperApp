@@ -27,6 +27,7 @@ import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -75,6 +76,18 @@ fun Context.getScreenSize(): Int =
         Configuration.SCREENLAYOUT_SIZE_SMALL -> 2
         else -> 2
     }
+
+fun Context.showDialog(
+    message: String,
+    function: () -> (Unit)
+) {
+    AlertDialog.Builder(this)
+        .setMessage(message)
+        .setNegativeButton(R.string.no) { _, _ -> }
+        .setPositiveButton(R.string.yes) { _, _ -> function() }
+        .create()
+        .show()
+}
 
 fun Context.loadImage(
     url: String,

@@ -56,7 +56,7 @@ class DetailViewModel(
     }
 
     fun checkIsFavourite(url: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             val favorites = repository.getAllAsync().await()
             favorites.map {
                 if (it.url == url) isFavorite.postValue(true)
@@ -72,7 +72,7 @@ class DetailViewModel(
     }
 
     private fun addToFavorites(picture: CommonPic?) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             val json = Gson().toJson(picture)
             repository.insertFavoriteAsync(Favorite(picture?.url ?: "", json)).await()
             isFavorite.postValue(true)
@@ -80,7 +80,7 @@ class DetailViewModel(
     }
 
     private fun removeFromFavorites(url: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             repository.deleteByUrlAsync(url).await()
             isFavorite.postValue(false)
         }
