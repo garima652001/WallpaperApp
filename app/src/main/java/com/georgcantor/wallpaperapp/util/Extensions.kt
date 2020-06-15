@@ -47,6 +47,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.georgcantor.wallpaperapp.R
+import com.georgcantor.wallpaperapp.util.Constants.COUNTER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,6 +90,7 @@ fun Context.showDialog(
     function: () -> (Unit)
 ) {
     val dialog = AlertDialog.Builder(this)
+    val preferenceManager = PreferenceManager(this)
 
     when (isRating) {
         true -> {
@@ -115,12 +117,16 @@ fun Context.showDialog(
             dialog
                 .setPositiveButton(R.string.add_review) { _, _ ->
                     when (userMark) {
-                        in 4..5 -> function()
+                        in 4..5 -> {
+                            function()
+                            preferenceManager.saveInt(COUNTER, 10)
+                        }
                         else -> this.shortToast(getString(R.string.thanks_for_feedback))
                     }
                 }
                 .setNegativeButton(R.string.cancel) { dialogInterface, _ ->
                     dialogInterface.cancel()
+                    preferenceManager.saveInt(COUNTER, 0)
                 }
         }
         false -> {
@@ -134,11 +140,9 @@ fun Context.showDialog(
     dialog.show()
 }
 
-fun Context.openUrl(url: String) {
-    Intent(ACTION_VIEW, Uri.parse(url)).apply {
-        addFlags(FLAG_ACTIVITY_NEW_TASK)
-        ContextCompat.startActivity(this@openUrl, this, null)
-    }
+fun Context.openUrl(url: String) = Intent(ACTION_VIEW, Uri.parse(url)).apply {
+    addFlags(FLAG_ACTIVITY_NEW_TASK)
+    ContextCompat.startActivity(this@openUrl, this, null)
 }
 
 fun Context.loadImage(

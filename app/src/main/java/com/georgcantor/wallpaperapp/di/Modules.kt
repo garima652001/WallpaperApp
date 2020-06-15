@@ -3,6 +3,7 @@ package com.georgcantor.wallpaperapp.di
 import com.georgcantor.wallpaperapp.model.local.FavDatabase
 import com.georgcantor.wallpaperapp.model.remote.ApiClient
 import com.georgcantor.wallpaperapp.repository.Repository
+import com.georgcantor.wallpaperapp.util.PreferenceManager
 import com.georgcantor.wallpaperapp.view.activity.categories.CategoriesViewModel
 import com.georgcantor.wallpaperapp.view.activity.detail.DetailViewModel
 import com.georgcantor.wallpaperapp.view.activity.models.ModelsViewModel
@@ -25,9 +26,13 @@ val repositoryModule = module {
     single { Repository(get(), get()) }
 }
 
+val preferenceModule = module {
+    single { PreferenceManager(androidApplication().applicationContext) }
+}
+
 val viewModelModule = module {
     viewModel {
-        PicturesViewModel(androidApplication(), get())
+        PicturesViewModel(androidApplication(), get(), get())
     }
     viewModel {
         DetailViewModel(androidApplication(), get())

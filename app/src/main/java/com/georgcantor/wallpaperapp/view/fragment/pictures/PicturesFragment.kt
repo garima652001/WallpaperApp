@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL
+import com.georgcantor.wallpaperapp.BuildConfig.APP_URL
 import com.georgcantor.wallpaperapp.R
 import com.georgcantor.wallpaperapp.util.*
 import com.georgcantor.wallpaperapp.util.Constants.ARG_DETAIL
@@ -92,6 +93,10 @@ class PicturesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
             isProgressVisible.observe(viewLifecycleOwner) { visible ->
                 if (visible) progress_animation.showAnimation() else progress_animation.hideAnimation()
+            }
+
+            isRatingDialogShowTime.observe(viewLifecycleOwner) { show ->
+                if (show) context?.showDialog(true, null) { context?.openUrl(APP_URL) }
             }
 
             error.observe(viewLifecycleOwner) { requireActivity()::shortToast }

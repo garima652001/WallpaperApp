@@ -22,4 +22,7 @@ object Constants {
     const val EDUCATION = "education"
 
     const val ERROR_504 = "HTTP 504 Unsatisfiable Request (only-if-cached)"
+
+    const val MAIN_STORAGE = "main_storage"
+    const val COUNTER = "counter"
 }
