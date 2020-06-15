@@ -98,7 +98,9 @@ class FavoritesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 ) {
                     val pic = Gson().fromJson(it.image, CommonPic::class.java)
-                    context?.showDialog(getString(R.string.del_from_fav_dialog)) { removeFromFavorites(pic.url) }
+                    context?.showDialog(false, getString(R.string.del_from_fav_dialog)) {
+                        removeFromFavorites(pic.url)
+                    }
                 }
             }
         }
@@ -117,7 +119,11 @@ class FavoritesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.action_remove_all -> {
-                context?.showDialog(getString(R.string.remove_fav_dialog_message), viewModel::removeAllFavorites)
+                context?.showDialog(
+                    false,
+                    getString(R.string.remove_fav_dialog_message),
+                    viewModel::removeAllFavorites
+                )
                 return true
             }
         }

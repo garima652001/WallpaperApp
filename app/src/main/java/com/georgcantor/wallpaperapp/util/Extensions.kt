@@ -5,6 +5,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -22,13 +24,17 @@ import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RatingBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -78,15 +84,61 @@ fun Context.getScreenSize(): Int =
     }
 
 fun Context.showDialog(
-    message: String,
+    isRating: Boolean,
+    message: String?,
     function: () -> (Unit)
 ) {
-    AlertDialog.Builder(this)
-        .setMessage(message)
-        .setNegativeButton(R.string.no) { _, _ -> }
-        .setPositiveButton(R.string.yes) { _, _ -> function() }
-        .create()
-        .show()
+    val dialog = AlertDialog.Builder(this)
+
+    when (isRating) {
+        true -> {
+            val linearLayout = LinearLayout(this)
+            val ratingBar = RatingBar(this)
+            var userMark = 0
+
+            val params = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            params.setMargins(50, 20, 0, 0)
+            ratingBar.layoutParams = params
+            ratingBar.numStars = 5
+            ratingBar.stepSize = 1F
+
+            linearLayout.addView(ratingBar)
+
+            dialog.setTitle(this.getString(R.string.rate_us))
+            dialog.setView(linearLayout)
+
+            ratingBar.onRatingBarChangeListener =
+                RatingBar.OnRatingBarChangeListener { _, ratingNumber, _ ->
+                    userMark = ratingNumber.toInt()
+                }
+
+            dialog
+                .setPositiveButton(R.string.add_review) { _, _ ->
+                    when (userMark) {
+                        in 4..5 -> function()
+                        else -> this.shortToast(getString(R.string.thanks_for_feedback))
+                    }
+                }
+                .setNegativeButton(R.string.cancel) { dialogInterface, _ ->
+                    dialogInterface.cancel()
+                }
+        }
+        false -> {
+            dialog
+                .setMessage(message)
+                .setNegativeButton(R.string.no) { _, _ -> }
+                .setPositiveButton(R.string.yes) { _, _ -> function() }
+        }
+    }
+    dialog.create()
+    dialog.show()
+}
+
+fun Context.openUrl(url: String) {
+    Intent(ACTION_VIEW, Uri.parse(url)).apply {
+        addFlags(FLAG_ACTIVITY_NEW_TASK)
+        ContextCompat.startActivity(this@openUrl, this, null)
+    }
 }
 
 fun Context.loadImage(
