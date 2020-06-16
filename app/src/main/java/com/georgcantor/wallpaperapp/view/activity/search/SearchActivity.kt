@@ -1,18 +1,30 @@
 package com.georgcantor.wallpaperapp.view.activity.search
 
+import android.Manifest.permission.RECORD_AUDIO
+import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES.M
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.RecognizerIntent.EXTRA_PROMPT
+import android.speech.RecognizerIntent.EXTRA_RESULTS
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.EditorInfo
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL
 import com.georgcantor.wallpaperapp.R
 import com.georgcantor.wallpaperapp.util.*
+import com.georgcantor.wallpaperapp.util.Constants.ARG_DETAIL
 import com.georgcantor.wallpaperapp.view.activity.detail.DetailActivity
 import com.georgcantor.wallpaperapp.view.fragment.pictures.PicturesAdapter
 import kotlinx.android.synthetic.main.activity_search.*
@@ -42,7 +54,7 @@ class SearchActivity : AppCompatActivity() {
 
         search_view.requestFocus()
         search_view.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            if (actionId == IME_ACTION_SEARCH) {
                 search_view.hideKeyboard()
                 adapter.clearPictures()
                 search(search_view.text.toString().trim { it <= ' ' }, index)
@@ -53,7 +65,7 @@ class SearchActivity : AppCompatActivity() {
 
         with(viewModel) {
             isNetworkAvailable.observe(this@SearchActivity) { available ->
-                no_internet_image.visibility = if (available) View.GONE else View.VISIBLE
+                no_internet_image.visibility = if (available) GONE else VISIBLE
             }
 
             isProgressVisible.observe(this@SearchActivity) { visible ->
@@ -74,11 +86,13 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-//        val cancel = menu?.findItem(R.id.action_cancel)
-//        cancel?.isVisible = viewModel.isSearchingActive.value == true
-//        return true
-//    }
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val cancel = menu?.findItem(R.id.action_cancel)
+        viewModel.isSearchingActive.observe(this) {active->
+            cancel?.isVisible = active
+        }
+        return true
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
@@ -89,40 +103,38 @@ class SearchActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.action_cancel -> {
                 search_error_anim?.hideAnimation()
-//                viewModel.isSearchingActive.value = false
+                viewModel.isSearchingActive.value = false
                 search_view.setText("")
                 search_view.showKeyboard()
             }
-            R.id.action_voice_search -> {} //checkPermission()
+            R.id.action_voice_search -> checkPermission()
         }
         return super.onOptionsItemSelected(item)
     }
 
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<String>,
-//        grantResults: IntArray
-//    ) {
-//        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.isNotEmpty()) {
-//            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                speak()
-//            }
-//        }
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.isNotEmpty()) {
+            if (grantResults[0] == PERMISSION_GRANTED) speak()
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-//            val arrayList = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-//            arrayList?.toString()?.let { search(it, index) }
-//
-//            val word = arrayList?.get(0)
-//            search_view.setText(word)
-//            adapter.clearPictures()
-//            search(word ?: "", 1)
-//        }
-//    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            val arrayList = data.getStringArrayListExtra(EXTRA_RESULTS)
+            arrayList?.toString()?.let { search(it, index) }
+
+            val word = arrayList?.get(0)
+            search_view.setText(word)
+            adapter.clearPictures()
+            search(word ?: "", 1)
+        }
+    }
 
     override fun onBackPressed() {
         super.onBackPressed()
@@ -142,13 +154,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        val staggeredGridLayoutManager = StaggeredGridLayoutManager(
-            getScreenSize(),
-            StaggeredGridLayoutManager.VERTICAL
-        )
+        val staggeredGridLayoutManager = StaggeredGridLayoutManager(getScreenSize(), VERTICAL)
         search_recycler.layoutManager = staggeredGridLayoutManager
         adapter = PicturesAdapter {
-            openActivity(DetailActivity::class.java) { putParcelable(Constants.ARG_DETAIL, it) }
+            openActivity(DetailActivity::class.java) { putParcelable(ARG_DETAIL, it) }
         }
         search_recycler.adapter = adapter
 
@@ -167,37 +176,30 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-//    private fun checkPermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-//                != PackageManager.PERMISSION_GRANTED
-//            ) {
-//                requestAudioPermission()
-//            } else {
-//                speak()
-//            }
-//        } else {
-//            speak()
-//        }
-//    }
+    private fun checkPermission() {
+        if (SDK_INT >= M) {
+            when (ContextCompat.checkSelfPermission(this, RECORD_AUDIO) != PERMISSION_GRANTED) {
+                true -> requestAudioPermission()
+                false -> speak()
+            }
+        } else {
+            speak()
+        }
+    }
 
-//    private fun speak() {
-//        try {
-//            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-//            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.speak_something))
-//            startActivityForResult(intent, REQUEST_CODE)
-//        } catch (e: Exception) {
-//            shortToast(getString(R.string.something_went_wrong))
-//        }
-//    }
+    private fun speak() {
+        try {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(EXTRA_PROMPT, getString(R.string.speak_something))
+            startActivityForResult(intent, REQUEST_CODE)
+        } catch (e: Exception) {
+            shortToast(getString(R.string.something_went_wrong))
+        }
+    }
 
-//    private fun requestAudioPermission() {
-//        ActivityCompat.requestPermissions(
-//            this,
-//            arrayOf(Manifest.permission.RECORD_AUDIO),
-//            PERMISSION_REQUEST_CODE
-//        )
-//    }
+    private fun requestAudioPermission() {
+        ActivityCompat.requestPermissions(this, arrayOf(RECORD_AUDIO), PERMISSION_REQUEST_CODE)
+    }
 
     private fun search(query: String, index: Int) = viewModel.getPictures(query, index)
 }

@@ -24,7 +24,7 @@ class SearchViewModel(
     val isProgressVisible = MutableLiveData<Boolean>()
     val error = MutableLiveData<String>()
     val pictures = MutableLiveData<MutableList<CommonPic>>()
-//    val isSearchingActive = MutableLiveData<Boolean>()
+    val isSearchingActive = MutableLiveData<Boolean>().apply { value = false }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         when (throwable.message) {
@@ -35,7 +35,7 @@ class SearchViewModel(
     }
 
     fun getPictures(query: String, index: Int) {
-//        isSearchingActive.value = true
+        isSearchingActive.value = true
 
         viewModelScope.launch(exceptionHandler) {
             val response = repository.getPixabayPictures(query, index)
