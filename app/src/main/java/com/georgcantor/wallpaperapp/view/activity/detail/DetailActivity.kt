@@ -3,13 +3,11 @@ package com.georgcantor.wallpaperapp.view.activity.detail
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.WallpaperManager
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
-import android.os.Handler
 import android.provider.MediaStore.Images.Media.getBitmap
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -82,8 +80,8 @@ class DetailActivity : AppCompatActivity() {
 
                 bottom_app_bar.setOnMenuItemClickListener {
                     when (it.itemId) {
-                        R.id.action_share -> { }
-                        R.id.action_download -> startDownloading()
+                        R.id.action_share -> share(picture?.imageUrl)
+//                        R.id.action_download -> startDownloading()
                         R.id.action_add_to_fav -> {
                             when (favorite) {
                                 true -> {
@@ -137,7 +135,7 @@ class DetailActivity : AppCompatActivity() {
                 isDownload.value = false
 
                 if (this@DetailActivity.isNetworkAvailable()) {
-                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                    if (permissionCheck == PERMISSION_GRANTED) {
                         CoroutineScope(Dispatchers.IO).launch { setImageAsWallpaper(picture) }
                     } else {
                         ActivityCompat.requestPermissions(
@@ -201,7 +199,7 @@ class DetailActivity : AppCompatActivity() {
         }
         progress_animation.showAnimation()
 
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+        if (permissionCheck == PERMISSION_GRANTED) {
             picture?.let { saveImage(it.imageUrl) }
         } else {
             viewModel.isDownload.value = true
@@ -213,9 +211,9 @@ class DetailActivity : AppCompatActivity() {
         }
 
         shortToast(getString(R.string.download_start))
-        Handler().postDelayed({
+        runDelayed(5000) {
             shortToast(getString(R.string.down_complete))
             progress_animation.hideAnimation()
-        }, 5000)
+        }
     }
 }

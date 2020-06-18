@@ -90,3 +90,5 @@
 -keepnames class com.georgcantor.wallpaperapp.model.* { *; }
 
 -keep class com.georgcantor.wallpaperapp.model.* { *; }
+
+-keep class com.georgcantor.wallpaperapp.model.data.unsplash.* { *; }

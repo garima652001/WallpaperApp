@@ -1,12 +1,12 @@
 package com.georgcantor.wallpaperapp.util
 
 import android.animation.Animator
+import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
-import android.content.Intent.ACTION_VIEW
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.*
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -57,6 +57,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.lang.System.currentTimeMillis
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 fun <T> Context.openActivity(it: Class<T>, extras: Bundle.() -> Unit = {}) {
     val context = this as AppCompatActivity
@@ -145,6 +146,19 @@ fun Context.openUrl(url: String) = Intent(ACTION_VIEW, Uri.parse(url)).apply {
     ContextCompat.startActivity(this@openUrl, this, null)
 }
 
+fun Context.share(text: String?) {
+    val intent = Intent().apply {
+        type = "text/plain"
+        putExtra(EXTRA_TEXT, text)
+        putExtra(EXTRA_SUBJECT, getString(R.string.app_name))
+    }
+    try {
+        startActivity(createChooser(intent, getString(R.string.choose_share)))
+    } catch (e: ActivityNotFoundException) {
+        shortToast(getString(R.string.cant_share))
+    }
+}
+
 fun Context.loadImage(
     url: String,
     view: ImageView,
@@ -204,8 +218,7 @@ private fun Bitmap.saveImage(context: Context) {
     val root = getExternalStoragePublicDirectory(DIRECTORY_PICTURES).toString()
     val myDir = File("$root/Wallpapers")
     myDir.mkdirs()
-    val randomInt = (0..10000).random()
-    val fileName = "Image-$randomInt.jpg"
+    val fileName = "Image-${Random.nextInt()}.jpg"
     val file = File(myDir, fileName)
     if (file.exists()) file.delete()
     try {
